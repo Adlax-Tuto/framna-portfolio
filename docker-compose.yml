@@ -1,0 +1,32 @@
+# docker-compose.yml
+version: "3.8"
+
+services:
+        postgres:
+                image: postgres:16
+                container_name: portfolio-postgres
+                restart: unless-stopped
+                environment:
+                        POSTGRES_USER: portfolio_user
+                        POSTGRES_PASSWORD: secretpassword
+                        POSTGRES_DB: portfolio_db
+                ports:
+                        - "5432:5432"
+                volumes:
+                        - postgres-data:/var/lib/postgresql/data
+
+        backend:
+                build: ./backend
+                container_name: portfolio-api
+                restart: unless-stopped
+                ports:
+                        - "8000:8000"
+                depends_on:
+                        - postgres
+                environment:
+                        - DATABASE_URL=postgresql+asyncpg://portfolio_user:secretpassword@postgres:5432/portfolio_db
+                volumes:
+                        - ./backend:/app
+
+volumes:
+        postgres-data:
